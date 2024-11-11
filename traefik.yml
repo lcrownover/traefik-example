@@ -1,0 +1,23 @@
+---
+# http routing section
+http:
+  routers:
+    to-testy:
+      rule: "Host(`me.localhost`) && PathPrefix(`/testy/`)"
+      service: testy
+    to-whoami:
+      rule: "Host(`me.localhost`) && PathPrefix(`/whoami/`)"
+      service: whoami
+
+  middlewares:
+
+  services:
+    # Define how to reach an existing service on our infrastructure
+    whoami:
+      loadBalancer:
+        servers:
+        - url: http://whoami
+    testy:
+      loadBalancer:
+        servers:
+          - url: http://testy:3001
