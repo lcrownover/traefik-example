@@ -1,39 +1,53 @@
 ---
+networks:
+  frontend:
+    name: frontend
+    driver: bridge
+
 services:
 
   traefik:
     image: traefik:v3.2
     container_name: traefik
-    command:
-      - "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.file.filename=/etc/traefik/dynamic_conf.yml"
-      - "--entryPoints.web.address=:80"
+    networks:
+      - frontend
     ports:
-      - "80:80"
-      - "8080:8080"
+      - 80:80
+      - 443:443
+      - 8080:8080
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - type: bind
-        source: "./traefik.yml"
-        target: "/etc/traefik/dynamic_conf.yml"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./config/rules.yaml:/etc/traefik/rules.yaml:ro
+      - ./data/certs/:/var/traefik/certs/:rw
+    env_file: .env
 
   testy:
     image: lcrownover/testy
     build:
       ./app
     container_name: testy
+    networks:
+      - frontend
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.testy.rule=Host(`testy.localhost`)"
-      - "traefik.http.routers.testy.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.testy.rule=Host(`testy.crownover.xyz`)
+      - traefik.http.routers.testy.entrypoints=web
+      - traefik.http.routers.testy-https.tls=true
+      - traefik.http.routers.testy-https.tls.certresolver=cloudflare
+      - traefik.http.routers.testy-https.entrypoints=websecure
+      - traefik.http.routers.testy-https.rule=Host(`testy.crownover.xyz`)
 
   whoami:
     image: "traefik/whoami"
     container_name: "simple-service"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.whoami.rule=Host(`whoami.crownover.xyz`)
+      - traefik.http.routers.whoami.entrypoints=web
+      - traefik.http.routers.whoami-https.tls=true
+      - traefik.http.routers.whoami-https.tls.certresolver=cloudflare
+      - traefik.http.routers.whoami-https.entrypoints=websecure
+      - traefik.http.routers.whoami-https.rule=Host(`whoami.crownover.xyz`)

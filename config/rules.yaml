@@ -3,13 +3,17 @@
 http:
   routers:
     to-testy:
-      rule: "Host(`me.localhost`) && PathPrefix(`/testy/`)"
+      rule: "Host(`web.crownover.xyz`) && PathPrefix(`/testy/`)"
       service: testy
     to-whoami:
-      rule: "Host(`me.localhost`) && PathPrefix(`/whoami/`)"
+      rule: "Host(`web.crownover.xyz`) && PathPrefix(`/whoami/`)"
       service: whoami
 
   middlewares:
+    http-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
 
   services:
     # Define how to reach an existing service on our infrastructure

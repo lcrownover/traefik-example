@@ -1,12 +1,25 @@
 # Example Traefik setup using Docker Compose
 
-Should just be able to `docker compose up --build` and it will start working.
+### Relevant files
 
-Uses the `traefik.yml` as a file provider for routing rules.
-You can get to either the `whoami` or `testy` containers via either 
-`http://whoami.localhost` or `http://test.localhost` respectively, or by using 
-the router rules to access them via `http://me.localhost/whoami` or `http://me.localhost/testy`.
+`config/traefik.yaml`
+
+Main configuration file of Traefik
+
+`config/rules.yaml`
+
+Dynamic configuration for Traefik such as URL-based routing.
 
 
+`.env`
 
+You'll also need a `.env` with your cloudflare API token for TLS:
+
+```
+CF_DNS_API_TOKEN = 'token here'
+```
+
+### Notes
+
+Make sure to `touch data/certs/acme.json && chmod 600 data/certs/acme.json`.
 
